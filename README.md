@@ -32,7 +32,7 @@ package main
 
 import (
     "fmt"
-    "github.com/your-username/pipeline"
+    "github.com/PriviteraStefano/pipeline"
 )
 
 func main() {
