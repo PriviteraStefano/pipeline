@@ -20,7 +20,7 @@ Pipeline is a Go library that provides building blocks for creating concurrent d
 ## Installation
 
 ```bash
-go get github.com/your-username/pipeline
+go get github.com/PriviteraStefano/pipeline
 ```
 
 ## Usage
