@@ -3,7 +3,6 @@ package pipeline
 import (
 	"fmt"
 	"reflect"
-	"sync"
 )
 
 func Router() {
@@ -115,61 +114,6 @@ func RouteByKey[T any, K comparable](input <-chan T, bufferSize int, keyFunc fun
 	return outputs
 }
 
-// RoundRobin distributes items evenly across multiple output channels
-func RoundRobin[T any](input <-chan T, numChannels int, bufferSize int) []chan T {
-	outputs := make([]chan T, numChannels)
-	for i := 0; i < numChannels; i++ {
-		outputs[i] = make(chan T, bufferSize)
-	}
-
-	go func() {
-		defer func() {
-			for _, ch := range outputs {
-				close(ch)
-			}
-		}()
-
-		index := 0
-		for item := range input {
-			outputs[index] <- item
-			index = (index + 1) % numChannels
-		}
-	}()
-
-	return outputs
-}
-
-// Broadcast sends each item to all output channels
-func Broadcast[T any](input <-chan T, numChannels int, bufferSize int) []chan T {
-	outputs := make([]chan T, numChannels)
-	for i := 0; i < numChannels; i++ {
-		outputs[i] = make(chan T, bufferSize)
-	}
-
-	go func() {
-		defer func() {
-			for _, ch := range outputs {
-				close(ch)
-			}
-		}()
-
-		for item := range input {
-			var wg sync.WaitGroup
-			wg.Add(len(outputs))
-
-			for _, ch := range outputs {
-				go func(ch chan T) {
-					defer wg.Done()
-					ch <- item
-				}(ch)
-			}
-			wg.Wait()
-		}
-	}()
-
-	return outputs
-}
-
 // MultiTypeRoute routes items to different channels based on their types
 // Uses reflection to determine the appropriate channel for each type
 func MultiTypeRoute(input <-chan interface{}, bufferSize int, types ...reflect.Type) map[reflect.Type]chan interface{} {
@@ -192,40 +136,6 @@ func MultiTypeRoute(input <-chan interface{}, bufferSize int, types ...reflect.T
 			} else {
 				panic(fmt.Sprintf("unsupported type: %T", item))
 			}
-		}
-	}()
-
-	return outputs
-}
-
-// LoadBalance routes items to the channel with the smallest buffer
-// Useful for distributing work evenly across workers
-func LoadBalance[T any](input <-chan T, numChannels int, bufferSize int) []chan T {
-	outputs := make([]chan T, numChannels)
-	for i := 0; i < numChannels; i++ {
-		outputs[i] = make(chan T, bufferSize)
-	}
-
-	go func() {
-		defer func() {
-			for _, ch := range outputs {
-				close(ch)
-			}
-		}()
-
-		for item := range input {
-			// Find channel with smallest buffer
-			minIndex := 0
-			minLen := len(outputs[0])
-
-			for i := 1; i < len(outputs); i++ {
-				if len(outputs[i]) < minLen {
-					minIndex = i
-					minLen = len(outputs[i])
-				}
-			}
-
-			outputs[minIndex] <- item
 		}
 	}()
 
