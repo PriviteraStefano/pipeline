@@ -29,11 +29,10 @@ func StartStageWithErr[I, O any](
 	stageWg.Add(workers)
 
 	// Initialize stage workers
-	for i := range workers {
+	for _ = range workers {
 		go func() {
 			defer stageWg.Done()
 			for item := range ch {
-				fmt.Printf("worker %d starts stage %s\n", i, name)
 				result, err := fn(item)
 				if err != nil {
 					ec <- fmt.Errorf("%s stage processing error | %w", name, err)
@@ -77,11 +76,10 @@ func SafeStartStage[I, O any](
 	stageWg.Add(workers)
 
 	// Initialize stage workers
-	for i := range workers {
+	for _ = range workers {
 		go func() {
 			defer stageWg.Done()
 			for item := range ch {
-				fmt.Printf("worker %d starts stage %s\n", i, name)
 				result := fn(item)
 				out <- result
 			}
@@ -117,11 +115,10 @@ func StartStage[I, O any](
 	stageWg.Add(workers)
 
 	// Initialize stage workers
-	for i := range workers {
+	for _ = range workers {
 		go func() {
 			defer stageWg.Done()
 			for item := range ch {
-				fmt.Printf("worker %d starts stage %s\n", i, name)
 				result := fn(item)
 				out <- result
 			}
