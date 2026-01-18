@@ -23,6 +23,31 @@ Pipeline is a Go library that provides building blocks for creating concurrent d
 go get github.com/PriviteraStefano/pipeline
 ```
 
+## Stage Overview
+
+Here is a brief overview of the stage architecture, the main building block of this library:
+
+![Stage Overview](docs/stage-overview.png)
+
+| Component | Purpose |
+| -------- | ------- |
+| **Input Channel** | Receives raw data to be processed. The stage consumes data from one or more input channels. |
+| **workers wg** | A WaitGroup that manages and coordinates multiple worker goroutines. When the input channel closes, it triggers the workers' synchronization. |
+| **go Worker** | Individual goroutine workers that process data concurrently. Multiple workers can process data in parallel for better performance. Each worker reads from the input channel and writes results to the output channel. |
+| **Output Channel** | Receives processed results from all workers and outputs them downstream. Closes when all workers are done. |
+| **go Cleaner** | A specialized goroutine that waits for all workers to finish processing (via the workers WaitGroup), then closes the output channel to signal completion to downstream consumers. |
+
+**Flow:**
+1. Data arrives on the Input Channel
+2. Workers distribute the data across available goroutines
+3. Each worker processes its portion concurrently
+4. Results are sent to the Output Channel
+5. When input closes, workers finish their tasks
+6. The go Cleaner waits for all workers to complete, then closes the Output Channel
+
+
+
+
 ## Usage
 
 ### Basic Pipeline Stage
