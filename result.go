@@ -10,16 +10,12 @@ type Result[S, W, E any] struct {
 
 // Success creates a successful Result with the given status.
 func Success[S, W, E any](status S) Result[S, W, E] {
-	return Result[S, W, E]{
-		success: &status,
-	}
+	return Result[S, W, E]{success: &status}
 }
 
 // Warning creates a Result with the given status and warning.
 func Warning[S, W, E any](status S, warning W) Result[S, W, E] {
-	return Result[S, W, E]{
-		warning: &warning,
-	}
+	return Result[S, W, E]{success: &status, warning: &warning}
 }
 
 // Error creates a Result with the given status and error.

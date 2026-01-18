@@ -5,11 +5,9 @@ import (
 	"reflect"
 )
 
-func Router() {
-	fmt.Println("Router")
-}
 
-func ForkUnbuffered[T, U any](c <-chan interface{}) (left chan T, right chan U) {
+// ForkUnbuffered creates two unbuffered channels from a single input channel based on type assertion
+func ForkUnbuffered[T, U any](c <-chan any) (left chan T, right chan U) {
 	left = make(chan T)
 	right = make(chan U)
 	go func() {
@@ -29,7 +27,8 @@ func ForkUnbuffered[T, U any](c <-chan interface{}) (left chan T, right chan U) 
 	return left, right
 }
 
-func Fork[T, U any](c <-chan interface{}, leftBufSize, rightBufSize int) (left chan T, right chan U) {
+// Fork creates two buffered channels from a single input channel based on type assertion
+func Fork[T, U any](c <-chan any, leftBufSize, rightBufSize int) (left chan T, right chan U) {
 	left = make(chan T, leftBufSize)
 	right = make(chan U, rightBufSize)
 	go func() {
@@ -116,10 +115,10 @@ func RouteByKey[T any, K comparable](input <-chan T, bufferSize int, keyFunc fun
 
 // MultiTypeRoute routes items to different channels based on their types
 // Uses reflection to determine the appropriate channel for each type
-func MultiTypeRoute(input <-chan interface{}, bufferSize int, types ...reflect.Type) map[reflect.Type]chan interface{} {
-	outputs := make(map[reflect.Type]chan interface{})
+func MultiTypeRoute(input <-chan any, bufferSize int, types ...reflect.Type) map[reflect.Type]chan any {
+	outputs := make(map[reflect.Type]chan any)
 	for _, t := range types {
-		outputs[t] = make(chan interface{}, bufferSize)
+		outputs[t] = make(chan any, bufferSize)
 	}
 
 	go func() {
