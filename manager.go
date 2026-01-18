@@ -1,0 +1,4 @@
+package pipeline
+
+func Manager() {
+}
