@@ -55,6 +55,7 @@ func StartStageWithErrAndConfig[I, O any](
 			defer EmitStageEvent(config, EventWorkerFinished, name, id, "Worker finished", nil)
 
 			for item := range ch {
+				EmitStageEvent(config, EventItemProcessStarted, name, id, "Item processing started", nil)
 				result, err := fn(item)
 				if err != nil {
 					wrappedErr := fmt.Errorf("%s stage processing error | %w", name, err)
@@ -127,6 +128,7 @@ func SafeStartStageWithConfig[I, O any](
 			defer EmitStageEvent(config, EventWorkerFinished, name, id, "Worker finished", nil)
 
 			for item := range ch {
+				EmitStageEvent(config, EventItemProcessStarted, name, id, "Item processing started", nil)
 				result := fn(item)
 				out <- result
 				EmitStageEvent(config, EventItemProcessed, name, id, "Item processed successfully", nil)
@@ -187,6 +189,7 @@ func StartStageWithConfig[I, O any](
 			defer EmitStageEvent(config, EventWorkerFinished, name, id, "Worker finished", nil)
 
 			for item := range ch {
+				EmitStageEvent(config, EventItemProcessStarted, name, id, "Item processing started", nil)
 				result := fn(item)
 				out <- result
 				EmitStageEvent(config, EventItemProcessed, name, id, "Item processed successfully", nil)
