@@ -7,9 +7,10 @@ import (
 
 // StartStageWithErr starts a stage with error handling
 func StartStageWithErr[I, O any](
-	name string,
+	id string,
 	workers int,
-	fn func(I) (O, error), ec chan error, c ...<-chan I,
+	fn func(I) (O, error),
+	ec chan error, c ...<-chan I,
 ) <-chan O {
 	// Validate input channels
 	if len(c) == 0 {
@@ -33,10 +34,10 @@ func StartStageWithErr[I, O any](
 		go func() {
 			defer stageWg.Done()
 			for item := range ch {
-				fmt.Printf("worker %d starts stage %s\n", i, name)
+				fmt.Printf("worker %d starts stage %s\n", i, id)
 				result, err := fn(item)
 				if err != nil {
-					ec <- fmt.Errorf("%s stage processing error | %w", name, err)
+					ec <- fmt.Errorf("%s stage processing error | %w", id, err)
 					continue
 				}
 				out <- result
@@ -54,7 +55,7 @@ func StartStageWithErr[I, O any](
 }
 
 // SafeStartStage starts a stage, returns an error if no input channels are provided
-func SafeStartStage[I, O any](
+func StartStage[I, O any](
 	name string,
 	workers int,
 	fn func(I) O,
@@ -97,42 +98,42 @@ func SafeStartStage[I, O any](
 	return out, nil
 }
 
-// StartStage starts a stage assuming params are valid
-func StartStage[I, O any](
-	name string,
-	workers int,
-	fn func(I) O,
-	c ...<-chan I,
-) <-chan O {
-	var ch <-chan I
-	if len(c) == 1 {
-		ch = c[0]
-	} else {
-		ch = Merge(c...)
-	}
+// // StartStage starts a stage assuming params are valid
+// func StartStage[I, O any](
+// 	name string,
+// 	workers int,
+// 	fn func(I) O,
+// 	c ...<-chan I,
+// ) <-chan O {
+// 	var ch <-chan I
+// 	if len(c) == 1 {
+// 		ch = c[0]
+// 	} else {
+// 		ch = Merge(c...)
+// 	}
 
-	// Setup stage workers
-	out := make(chan O, workers)
-	var stageWg sync.WaitGroup
-	stageWg.Add(workers)
+// 	// Setup stage workers
+// 	out := make(chan O, workers)
+// 	var stageWg sync.WaitGroup
+// 	stageWg.Add(workers)
 
-	// Initialize stage workers
-	for i := range workers {
-		go func() {
-			defer stageWg.Done()
-			for item := range ch {
-				fmt.Printf("worker %d starts stage %s\n", i, name)
-				result := fn(item)
-				out <- result
-			}
-		}()
-	}
+// 	// Initialize stage workers
+// 	for i := range workers {
+// 		go func() {
+// 			defer stageWg.Done()
+// 			for item := range ch {
+// 				fmt.Printf("worker %d starts stage %s\n", i, name)
+// 				result := fn(item)
+// 				out <- result
+// 			}
+// 		}()
+// 	}
 
-	// Close the output channel when stage workers are done
-	go func() {
-		stageWg.Wait()
-		close(out)
-	}()
+// 	// Close the output channel when stage workers are done
+// 	go func() {
+// 		stageWg.Wait()
+// 		close(out)
+// 	}()
 
-	return out
-}
+// 	return out
+// }
