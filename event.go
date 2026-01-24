@@ -22,9 +22,9 @@ const (
 	ItemFailed         EventType = "item_failed"
 
 	// Router events
-	RouteStarted   EventType = "route_started"
-	RouteCompleted EventType = "route_finished"
-	RouteFailed    EventType = "route_error"
+	RouterStarted   EventType = "router_started"
+	RouterCompleted EventType = "router_finished"
+	RouterFailed    EventType = "router_error"
 )
 
 type Eventful interface {
@@ -87,21 +87,21 @@ func NewEventRouteStarted(id string, inputChannel string, extras *map[string]any
 	metadata := createMetadata(extras, 1)
 	metadata[inputChannelKey] = inputChannel
 
-	return &Event{id, RouteStarted, time.Now(), &metadata}
+	return &Event{id, RouterStarted, time.Now(), &metadata}
 }
 
 func NewEventRouteCompleted(id string, outputChannel string, extras *map[string]any) *Event {
 	metadata := createMetadata(extras, 1)
 	metadata[outputChannelKey] = outputChannel
 
-	return &Event{id, RouteCompleted, time.Now(), &metadata}
+	return &Event{id, RouterCompleted, time.Now(), &metadata}
 }
 
 func NewEventRouteFailed(id string, err error, extras *map[string]any) *ErrorEvent {
 	metadata := createMetadata(extras, 0)
 
 	return &ErrorEvent{
-		Event{id, RouteFailed, time.Now(), &metadata},
+		Event{id, RouterFailed, time.Now(), &metadata},
 		err,
 	}
 }
